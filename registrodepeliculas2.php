@@ -43,6 +43,7 @@
 <?php
 
 $exito = "no";
+$actualizar = "no";
 $error = "";
 
 $conexion = mysqli_connect("localhost","id22032743_dbpeliculas","W!89H*V3#e","id22032743_guille");
@@ -59,13 +60,14 @@ $out = ob_get_clean();
 echo $out;
 */
 
-If (isset($_GET['accion']) && $_GET['accion'] == "eliminar" && isset($_GET['id_movie']) && !empty($_GET['id_movie']) && is_numeric($_GET['id_movie'])) {
-  $id_movie = (int)$_GET['id_movie'];
+if (isset($_REQUEST['accion']) && !empty($_REQUEST['accion'])) {$accion = $_REQUEST['accion'];}
+if (isset($_REQUEST['id_movie']) && !empty($_REQUEST['id_movie']) && is_numeric($_REQUEST['id_movie'])) {$id_movie = (int)$_REQUEST['id_movie']; $actualizar="si";}
+
+if ($accion == "eliminar" && $actualizar == "si") {
   $borrar = 'delete from movies where id_movie = '.$id_movie;
   $result_borrar = mysqli_query($conexion, $borrar);
 }
 else {
-
 
 $opciones1 = array(
     'opciones1' => array(
@@ -112,11 +114,17 @@ if (isset($_POST['correo']) && !empty($_POST['correo'])) {
   $verif = mysqli_query($conexion, $verificacion);
 
   if (mysqli_num_rows($verif) > 0) {
-
-    $pelicula = 'insert into movies
-                 (id_movie, director_id, nombre, descripcion, genero, calificacion, anio, estrellas)
-                 values
-                 (NULL, '.$id_director.', "'.$nombre.'", "'.$descripcion.'", "'.$genero.'", "'.$calificacion.'", '.$anio.', '.$estrellas.')';
+    if ($accion == "insertar" && $actualizar == "no") {
+      $pelicula = 'insert into movies
+                   (id_movie, director_id, nombre, descripcion, genero, calificacion, anio, estrellas)
+                   values
+                   (NULL, '.$id_director.', "'.$nombre.'", "'.$descripcion.'", "'.$genero.'", "'.$calificacion.'", '.$anio.', '.$estrellas.')';
+    }
+    elseif ($accion == "modificar" && $actualizar == "si") {
+      $pelicula = 'update movies
+                   set director_id = '.$id_director.', nombre = "'.$nombre.'", descripcion = "'.$descripcion.'", genero = "'.$genero.'", calificacion = "'.$calificacion.'", anio = '.$anio.', estrellas = '.$estrellas.'
+                   where id_movie = '.$id_movie;
+    }
     $result = mysqli_query($conexion, $pelicula);
 //var_dump($result);
     if (!$result) {$error .= "Hubo un error en la inserción de la película: ". mysqli_error($conexion);}
@@ -191,9 +199,9 @@ else {
       <td><?php echo $listado['anio']?></td>
       <td><?php echo $listado['estrellas']?></td>
       <td>
-        <!-- <a href="registrodepeliculas2.php?accion=eliminar&amp;id_movie=<?php echo $listado['id_movie']?>" target="_top"><img src="clipart/delete.png" alt="Eliminar" width="32" height="32"></a> -->
+        <?php echo '<a href="registrodepeliculas.php?accion=modificar&amp;id_movie='.$listado['id_movie'].'&amp;id_director='.$director_id.'&amp;nombre='.urlencode($listado['nombre']).'&amp;descripcion='.urlencode($listado['descripcion']).'&amp;genero='.urlencode($listado['genero']).'&amp;calificacion='.urlencode($listado['calificacion']).'&amp;anio='.$listado['anio'].'&amp;estrellas='.$listado['estrellas'].'" target="_top"><img src="clipart/pen.png" alt="Modificar" width="32" height="32"></a>'; ?>
 
-        <a href="javascript: confirma_borrar('registrodepeliculas2.php?accion=eliminar&amp;id_movie=<?php echo $listado['id_movie']?>')" target="_top"><img src="clipart/delete.png" alt="Eliminar" width="32" height="32"></a>
+        <a href="javascript: confirma_borrar('registrodepeliculas2.php?accion=eliminar&amp;id_movie=<?php echo $listado['id_movie']; ?>')" target="_top"><img src="clipart/delete.png" alt="Eliminar" width="32" height="32"></a>
 
       </td>
     </tr>
